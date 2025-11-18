@@ -16,6 +16,7 @@ class ApiError extends error{
             this.stack=stack;
         }
         else{
+            // This creates a clean stack trace beginning from where the error was thrown, not from inside your ApiError class.
             Error.captureStackTrace(this,this.constructor);
         }
     }
