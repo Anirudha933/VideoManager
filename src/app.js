@@ -18,6 +18,10 @@ app.use(express.static("public"));
 //to prform crud operations on cookies being controlled from server
 app.use(cookieParser());
 
+//routes import
+// these type of import can only be used with default export
+import userRouter from "./routes/user.routes.js";
 
-
+//routes declaration
+app.use('/api/v1/users',userRouter);
 export {app};
