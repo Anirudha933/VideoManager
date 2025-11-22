@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { User } from "../Models/user.models.js";
-import {uploadOnCLoudinary} from "../utils/cloudinary.service.js";
+import {deleteOnCloudinary, uploadOnCLoudinary} from "../utils/cloudinary.service.js";
 import {ApiResponse} from "../utils/apiResponse.js";
 import fs from "fs";
 import jwt from "jsonwebtoken";
@@ -278,6 +278,7 @@ const updateUserAvatar=asyncHandler(async(req,res)=>{
     if(!avatarLocalPath){
         throw new ApiError(400,"Avatar is required");
     }
+    const oldAvatar=await User.findById(req?.user?._id)?.avatar;
     const uploadOnCloudinaryRes=await uploadOnCLoudinary(avatarLocalPath);
     if(!uploadOnCloudinaryRes.url){
         throw new ApiError(500,"Avatar upload on cloudinary failed");
@@ -291,6 +292,10 @@ const updateUserAvatar=asyncHandler(async(req,res)=>{
     .select("-password -refreshToken");
     if(!user){
         throw new ApiError(404,"Avatar update failed");
+    }
+    const deleteOldAvatar=await deleteOnCloudinary(oldAvatar);
+    if(deleteOldAvatar.result!=="ok"){
+        throw new ApiError(500,"Old avatar delete on cloudinary failed");
     }
     return res.status(200).json(
         new ApiResponse(
@@ -306,6 +311,7 @@ const updateUserCoverImage=asyncHandler(async(req,res)=>{
     if(!CoverImageLocalPath){
         throw new ApiError(400,"Cover image is required");
     }
+    const oldCoverImage=await User.findById(req?.user?._id)?.coverimage;
     const uploadOnCloudinaryRes=await uploadOnCLoudinary(CoverImageLocalPath);
     if(!uploadOnCloudinaryRes.url){
         throw new ApiError(500,"Avatar upload on cloudinary failed");
@@ -319,6 +325,10 @@ const updateUserCoverImage=asyncHandler(async(req,res)=>{
     .select("-password -refreshToken");
     if(!user){
         throw new ApiError(404,"Cover image update failed");
+    }
+    const deleteOldCoverimage=await deleteOnCloudinary(oldCoverImage);
+    if(deleteOldCoverimage.result!=="ok"){
+        throw new ApiError(500,"Old cover image delete on cloudinary failed");
     }
     return res.status(200).json(
         new ApiResponse(

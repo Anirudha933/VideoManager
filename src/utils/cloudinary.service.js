@@ -7,6 +7,27 @@ cloudinary.config({
   secure: true
 });
 
+const extractPublicId = (url) => {
+  try {
+    // Split by '/'
+    const parts = url.split('/');
+
+    // Find version segment like v1234567890
+    const versionIndex = parts.findIndex(p => p.startsWith('v'));
+
+    // Everything after version is public_id + extension
+    const publicIdWithExt = parts.slice(versionIndex + 1).join('/');
+
+    // Remove extension (.jpg, .png, .webp, etc.)
+    const dotIndex = publicIdWithExt.lastIndexOf('.');
+    return publicIdWithExt.substring(0, dotIndex);
+  } catch (err) {
+    console.error("Error extracting public_id:", err);
+    return null;
+  }
+};
+
+
 const uploadOnCLoudinary=async (localfilePath)=>{
     try {
         if(!localfilePath) return null;
@@ -24,5 +45,16 @@ const uploadOnCLoudinary=async (localfilePath)=>{
     }
 }
 
+const deleteOnCloudinary=async(urlfromclodinary)=>{
+    try{
+        const public_id=extractPublicId(urlfromclodinary);
+        const res=await cloudinary.uploader.destroy(public_id);
+        return res;
+    }
+    catch(error){
+        console.log("File delete on cloudinary failed",error);
+        return null;
+    }
+}
 
-export {uploadOnCLoudinary};
+export {uploadOnCLoudinary,deleteOnCloudinary};
